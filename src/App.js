@@ -23,14 +23,14 @@ const CHAPTERS = {
     label: "Communication & Collaboration",
     icon: "💬",
     color: C.comm,
-    short: "CH.1",
+    short: "CHAPITRE 1",
     desc: "Réseaux sociaux, messagerie, éthique numérique"
   },
   secu: {
     label: "Sécurité",
     icon: "🔒",
     color: C.secu,
-    short: "CH.2",
+    short: "CHAPITRE 2",
     desc: "Vie privée, cybersécurité, identité numérique"
   },
 };
