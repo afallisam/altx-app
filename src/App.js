@@ -739,7 +739,6 @@ export default function App() {
     if (mode !== "menu") { setMode("menu"); return; }
     if (screen === "section") { setScreen("chapter"); setSection(null); return; }
     if (screen === "chapter") { setScreen("home"); setChapter(null); return; }
-    if (screen === "ai") { setScreen("home"); return; }
   }
 
   function handleDone(score, total, wrong) {
@@ -835,18 +834,6 @@ export default function App() {
               })}
             </div>
 
-            {/* AI */}
-            <button onClick={() => setScreen("ai")} style={{ width: "100%", background: "linear-gradient(135deg, #1a1a4e, #1a2a4e)", border: `1.5px solid #4a3a8a`, borderRadius: 14, padding: "14px 16px", cursor: "pointer", display: "flex", alignItems: "center", gap: 12 }}>
-              <span style={{ fontSize: 26 }}>🤖</span>
-              <div style={{ textAlign: "left" }}>
-                <div style={{ fontSize: 14, fontWeight: 800, color: C.purple }}>Assistant IA @lt_x</div>
-                <div style={{ fontSize: 11, color: C.grey }}>Pose toutes tes questions sur le cours</div>
-              </div>
-              <span style={{ marginLeft: "auto", color: C.grey }}>›</span>
-            </button>
-          </div>
-        )}
-
         {/* CHAPTER */}
         {screen === "chapter" && chapter && (
           <div>
@@ -930,10 +917,6 @@ export default function App() {
             )}
           </div>
         )}
-
-        {/* AI SCREEN */}
-        {screen === "ai" && <div style={{ height: "calc(100vh - 140px)" }}><AITutor chapter={chapter} /></div>}
-      </div>
 
       {/* BOTTOM NAV */}
       {screen !== "section" && (
