@@ -717,6 +717,86 @@ function Lesson({ text, color }) {
 }
 
 // ═══════════════════════════════════════
+// AI TUTOR COMPONENT
+// ═══════════════════════════════════════
+function AITutor({ chapter }) {
+  const [msgs, setMsgs] = useState([{
+    role: "assistant",
+    text: "Bonjour ! 😊 Je suis ton assistant pour le cours @lt_x — Numérique 1ère secondaire. Pose-moi n'importe quelle question sur la communication numérique, la sécurité, la vie privée, les réseaux sociaux ou les outils numériques !"
+  }]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const color = chapter ? CHAPTERS[chapter].color : C.comm;
+  const ref = useRef(null);
+
+  useEffect(() => { ref.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs]);
+
+  async function send() {
+    const q = input.trim();
+    if (!q || loading) return;
+    setInput("");
+    setMsgs(m => [...m, { role: "user", text: q }]);
+    setLoading(true);
+    try {
+      const hist = msgs.map(m => ({ role: m.role === "assistant" ? "assistant" : "user", content: m.text }));
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1000,
+          system: `Tu es un professeur de numérique bienveillant et pédagogue pour des élèves de 1ère secondaire en Belgique francophone. 
+Tu enseignes le cours @lt_x — "Comprendre le numérique, se questionner & agir".
+Les deux chapitres du cours sont :
+1. Communication & Collaboration : réseaux socio-numériques, messagerie (e-mail, messagerie instantanée), vocabulaire de la messagerie, éthique des médias numériques (droits, nétiquette, licences, propriété intellectuelle), outils de collaboration.
+2. Sécurité : profil et vie privée, signalétique PEGI, HTTP/HTTPS, confidentialité, cyberharcèlement, cyberattaques, cybermanipulation, cyberdépendance, identité numérique.
+Réponds en français, de façon claire, simple et adaptée à des ados de 12-14 ans. Utilise des exemples concrets du quotidien. Tes réponses doivent être courtes (max 6-8 lignes). N'hésite pas à utiliser des emojis avec modération. Si l'élève se trompe, corrige gentiment et explique pourquoi. Ne donne jamais directement les réponses des exercices — guide l'élève pour qu'il trouve lui-même.`,
+          messages: [...hist, { role: "user", content: q }]
+        })
+      });
+      const data = await res.json();
+      const text = data.content?.map(b => b.text || "").join("") || "Désolé, je n'ai pas pu répondre. Réessaie ! 😊";
+      setMsgs(m => [...m, { role: "assistant", text }]);
+    } catch {
+      setMsgs(m => [...m, { role: "assistant", text: "Oups ! Une erreur est survenue. Réessaie ! 😊" }]);
+    }
+    setLoading(false);
+  }
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+      <div style={{ flex: 1, overflowY: "auto", paddingBottom: 8 }}>
+        {msgs.map((m, i) => (
+          <div key={i} style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start", marginBottom: 10 }}>
+            <div style={{ maxWidth: "85%", background: m.role === "user" ? color : C.card2, color: m.role === "user" ? C.bg : C.white, borderRadius: m.role === "user" ? "14px 14px 4px 14px" : "14px 14px 14px 4px", padding: "10px 14px", fontSize: 14, lineHeight: 1.5, border: m.role !== "user" ? `1px solid ${C.border}` : "none" }}>
+              {m.text}
+            </div>
+          </div>
+        ))}
+        {loading && (
+          <div style={{ display: "flex", justifyContent: "flex-start", marginBottom: 10 }}>
+            <div style={{ background: C.card2, border: `1px solid ${C.border}`, borderRadius: "14px 14px 14px 4px", padding: "10px 14px", color: C.grey, fontSize: 14 }}>
+              ✍️ En train de répondre...
+            </div>
+          </div>
+        )}
+        <div ref={ref} />
+      </div>
+      <div style={{ display: "flex", gap: 8, paddingTop: 10 }}>
+        <input
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && send()}
+          placeholder="Pose ta question..."
+          style={{ flex: 1, background: C.card2, border: `1.5px solid ${C.border}`, borderRadius: 10, padding: "12px 14px", color: C.white, fontSize: 14, outline: "none" }}
+        />
+        <button onClick={send} disabled={loading || !input.trim()} style={{ background: color, border: "none", borderRadius: 10, padding: "12px 16px", color: C.bg, fontSize: 16, cursor: "pointer", fontWeight: 800, opacity: (!input.trim() || loading) ? 0.5 : 1 }}>→</button>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════
 // MAIN APP
 // ═══════════════════════════════════════
 export default function App() {
@@ -739,6 +819,7 @@ export default function App() {
     if (mode !== "menu") { setMode("menu"); return; }
     if (screen === "section") { setScreen("chapter"); setSection(null); return; }
     if (screen === "chapter") { setScreen("home"); setChapter(null); return; }
+    if (screen === "ai") { setScreen("home"); return; }
   }
 
   function handleDone(score, total, wrong) {
@@ -834,13 +915,25 @@ export default function App() {
               })}
             </div>
 
+            {/* AI */}
+            <button onClick={() => setScreen("ai")} style={{ width: "100%", background: "linear-gradient(135deg, #1a1a4e, #1a2a4e)", border: `1.5px solid #4a3a8a`, borderRadius: 14, padding: "14px 16px", cursor: "pointer", display: "flex", alignItems: "center", gap: 12 }}>
+              <span style={{ fontSize: 26 }}>🤖</span>
+              <div style={{ textAlign: "left" }}>
+                <div style={{ fontSize: 14, fontWeight: 800, color: C.purple }}>Assistant IA @lt_x</div>
+                <div style={{ fontSize: 11, color: C.grey }}>Pose toutes tes questions sur le cours</div>
+              </div>
+              <span style={{ marginLeft: "auto", color: C.grey }}>›</span>
+            </button>
+          </div>
+        )}
+
         {/* CHAPTER */}
         {screen === "chapter" && chapter && (
           <div>
             <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
               {["sections", "ai"].map(t => (
                 <button key={t} onClick={() => setTab(t)} style={{ flex: 1, padding: "10px", borderRadius: 10, border: "none", cursor: "pointer", background: tab === t ? chColor : C.card2, color: tab === t ? C.bg : C.grey, fontWeight: 700, fontSize: 13 }}>
-                  {t === "sections" ? "📚 Sections"}
+                  {t === "sections" ? "📚 Sections" : "🤖 Aide IA"}
                 </button>
               ))}
             </div>
@@ -918,6 +1011,10 @@ export default function App() {
           </div>
         )}
 
+        {/* AI SCREEN */}
+        {screen === "ai" && <div style={{ height: "calc(100vh - 140px)" }}><AITutor chapter={chapter} /></div>}
+      </div>
+
       {/* BOTTOM NAV */}
       {screen !== "section" && (
         <div style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 500, background: C.card, borderTop: `1px solid ${C.border}`, display: "flex", padding: "10px 0 18px" }}>
@@ -925,6 +1022,7 @@ export default function App() {
             { id: "home", icon: "🏠", label: "Accueil" },
             { id: "comm", icon: "💬", label: "Comm." },
             { id: "secu", icon: "🔒", label: "Sécurité" },
+            { id: "ai", icon: "🤖", label: "IA" }
           ].map(item => {
             const isActive = screen === item.id || (screen === "chapter" && chapter === item.id);
             const col = CHAPTERS[item.id]?.color || C.purple;
