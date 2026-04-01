@@ -840,7 +840,7 @@ export default function App() {
             <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
               {["sections", "ai"].map(t => (
                 <button key={t} onClick={() => setTab(t)} style={{ flex: 1, padding: "10px", borderRadius: 10, border: "none", cursor: "pointer", background: tab === t ? chColor : C.card2, color: tab === t ? C.bg : C.grey, fontWeight: 700, fontSize: 13 }}>
-                  {t === "sections" ? "📚 Sections" : "🤖 Aide IA"}
+                  {t === "sections" ? "📚 Sections"}
                 </button>
               ))}
             </div>
@@ -925,7 +925,6 @@ export default function App() {
             { id: "home", icon: "🏠", label: "Accueil" },
             { id: "comm", icon: "💬", label: "Comm." },
             { id: "secu", icon: "🔒", label: "Sécurité" },
-            { id: "ai", icon: "🤖", label: "IA" }
           ].map(item => {
             const isActive = screen === item.id || (screen === "chapter" && chapter === item.id);
             const col = CHAPTERS[item.id]?.color || C.purple;
